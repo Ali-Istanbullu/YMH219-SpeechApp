@@ -12,6 +12,18 @@ public sealed class SahteTanici : IKonusmaTanici
 
     public List<int> GelenParcaUzunluklari { get; } = [];
     public bool HataVersin { get; set; }
+    public bool HazirlamaHataVersin { get; set; }
+    public int HazirlamaSayisi { get; private set; }
+
+    public async Task HazirlaAsync(CancellationToken iptal)
+    {
+        await Task.Yield();
+        HazirlamaSayisi++;
+        if (HazirlamaHataVersin)
+        {
+            throw new TanimaHatasi("Konuşma tanıma modeli bulunamadı.");
+        }
+    }
 
     public async Task<string> CevirAsync(float[] ses, CancellationToken iptal)
     {

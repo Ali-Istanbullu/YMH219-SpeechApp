@@ -45,12 +45,24 @@ public sealed class TanimaYoneticisi
 
     public IReadOnlyList<string> Mikrofonlar() => _mikrofon.Cihazlar();
 
-    // Dinlemeye baslar. Mikrofon acilamazsa MikrofonHatasi cagirana gider, durum Hazir kalir.
-    public void Baslat(int mikrofonNo)
+    // Once modeli hazirlar, sonra dinlemeye baslar. Model sorunu TanimaHatasi, mikrofon sorunu MikrofonHatasi olarak
+    // cagirana gider; iki durumda da durum Hazir'a doner.
+    public async Task BaslatAsync(int mikrofonNo)
     {
         if (Durum != TanimaDurumu.Hazir)
         {
             throw new InvalidOperationException($"Tanima zaten suruyor ({Durum}).");   // bug: buton acik kalmis
+        }
+
+        DurumYap(TanimaDurumu.Hazirlaniyor);
+        try
+        {
+            await _tanici.HazirlaAsync(CancellationToken.None);
+        }
+        catch (TanimaHatasi)
+        {
+            DurumYap(TanimaDurumu.Hazir);
+            throw;
         }
 
         _kuyruk = Channel.CreateUnbounded<float[]>(new UnboundedChannelOptions { SingleReader = true });
@@ -60,7 +72,8 @@ public sealed class TanimaYoneticisi
         }
         catch (MikrofonHatasi)
         {
-            _kuyruk = null;   // durum Hazir kalir; hata cagirana (ekrana) gider
+            _kuyruk = null;   // hata cagirana (ekrana) gider
+            DurumYap(TanimaDurumu.Hazir);
             throw;
         }
         _dongununSonu = new TaskCompletionSource();

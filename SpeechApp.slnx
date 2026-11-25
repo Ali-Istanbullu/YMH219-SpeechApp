@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SpeechApp.Core/SpeechApp.Core.csproj" />
+    <Project Path="src/SpeechApp.Infrastructure/SpeechApp.Infrastructure.csproj" />
+    <Project Path="src/SpeechApp.WinForms/SpeechApp.WinForms.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SpeechApp.UnitTests/SpeechApp.UnitTests.csproj" />

@@ -27,7 +27,7 @@ public sealed class TanimaYoneticisiTestleri
         var gelenler = new List<string>();
         yonetici.SonucEklendi += s => gelenler.Add(s.Metin);
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         Assert.AreEqual(TanimaDurumu.Dinleniyor, yonetici.Durum);
         Assert.IsTrue(mikrofon.Acik);
         Gonder(mikrofon, IkiCumle);
@@ -46,7 +46,7 @@ public sealed class TanimaYoneticisiTestleri
         var tanici = new SahteTanici("Son cümle");
         var yonetici = new TanimaYoneticisi(mikrofon, tanici, new SahteSaat(), new SahteGunlukcu());
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         Gonder(mikrofon, SesUretici.Konusma(1500));   // sessizlik yok
         await yonetici.DurdurAsync();
 
@@ -60,7 +60,7 @@ public sealed class TanimaYoneticisiTestleri
         var mikrofon = new SahteMikrofon();
         var yonetici = new TanimaYoneticisi(mikrofon, new SahteTanici("  ", "Tamam"), new SahteSaat(), new SahteGunlukcu());
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         Gonder(mikrofon, IkiCumle);
         await yonetici.DurdurAsync();
 
@@ -69,13 +69,28 @@ public sealed class TanimaYoneticisiTestleri
     }
 
     [TestMethod]
-    public void MikrofonAcilamazsa_HataCagiranaGider_DurumHazirKalir()
+    public async Task MikrofonAcilamazsa_HataCagiranaGider_DurumHazirKalir()
     {
         var mikrofon = new SahteMikrofon { BaslatHataVersin = true };
         var yonetici = new TanimaYoneticisi(mikrofon, new SahteTanici(), new SahteSaat(), new SahteGunlukcu());
 
-        Assert.ThrowsExactly<MikrofonHatasi>(() => yonetici.Baslat(0));
+        await Assert.ThrowsExactlyAsync<MikrofonHatasi>(() => yonetici.BaslatAsync(0));
         Assert.AreEqual(TanimaDurumu.Hazir, yonetici.Durum);
+    }
+
+    [TestMethod]
+    public async Task ModelYoksa_MikrofonHicAcilmaz_HataCagiranaGider()
+    {
+        var mikrofon = new SahteMikrofon();
+        var yonetici = new TanimaYoneticisi(mikrofon, new SahteTanici { HazirlamaHataVersin = true }, new SahteSaat(),
+            new SahteGunlukcu());
+        var durumlar = new List<TanimaDurumu>();
+        yonetici.DurumDegisti += () => durumlar.Add(yonetici.Durum);
+
+        await Assert.ThrowsExactlyAsync<TanimaHatasi>(() => yonetici.BaslatAsync(0));
+
+        Assert.IsFalse(mikrofon.Acik);
+        CollectionAssert.AreEqual(new[] { TanimaDurumu.Hazirlaniyor, TanimaDurumu.Hazir }, durumlar);
     }
 
     [TestMethod]
@@ -87,7 +102,7 @@ public sealed class TanimaYoneticisiTestleri
         var hatalar = new List<string>();
         yonetici.HataOldu += hatalar.Add;
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         Gonder(mikrofon, IkiCumle);
         await yonetici.DurdurAsync();
 
@@ -105,7 +120,7 @@ public sealed class TanimaYoneticisiTestleri
         var bitti = new TaskCompletionSource<string>();
         yonetici.HataOldu += m => bitti.TrySetResult(m);
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         mikrofon.Kes();
         string mesaj = await bitti.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await yonetici.DurdurAsync();
@@ -122,7 +137,7 @@ public sealed class TanimaYoneticisiTestleri
         bool temizlendi = false;
         yonetici.Temizlendi += () => temizlendi = true;
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         Gonder(mikrofon, IkiCumle);
         await yonetici.DurdurAsync();
         yonetici.Temizle();
@@ -130,18 +145,18 @@ public sealed class TanimaYoneticisiTestleri
         Assert.IsTrue(temizlendi);
         Assert.IsEmpty(yonetici.Sonuclar);
 
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
         Gonder(mikrofon, SesUretici.Konusma(800));
         await yonetici.DurdurAsync();
         Assert.AreEqual("üç", yonetici.Sonuclar.Single().Metin);
     }
 
     [TestMethod]
-    public void IkinciKezBaslat_BugdurVeFirlatir()
+    public async Task IkinciKezBaslat_BugdurVeFirlatir()
     {
         var yonetici = new TanimaYoneticisi(new SahteMikrofon(), new SahteTanici(), new SahteSaat(), new SahteGunlukcu());
-        yonetici.Baslat(0);
+        await yonetici.BaslatAsync(0);
 
-        Assert.ThrowsExactly<InvalidOperationException>(() => yonetici.Baslat(0));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => yonetici.BaslatAsync(0));
     }
 }
