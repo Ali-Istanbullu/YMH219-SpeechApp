@@ -95,15 +95,20 @@ public sealed class WhisperTanici : IKonusmaTanici, IDisposable
                 "SpeechApp kurulumunu yeniden çalıştırın ya da https://aka.ms/vs/17/release/vc_redist.x64.exe adresinden kurun.");
         }
 
+        // Model dosyasi ilk kullanimda (Build) okunur; bozuk dosya hatasi FromPath'te degil orada gelebilir
+        // (smoke testi yakaladi). Ikisi de ayni try icinde.
+        WhisperFactory? fabrika = null;
         try
         {
-            _fabrika = WhisperFactory.FromPath(_modelYolu);
+            fabrika = WhisperFactory.FromPath(_modelYolu);
+            _islemci = fabrika.CreateBuilder().WithLanguage("tr").Build();
+            _fabrika = fabrika;
         }
         catch (WhisperModelLoadException hata)
         {
+            fabrika?.Dispose();
             throw new TanimaHatasi("Konuşma tanıma modeli bozuk ya da yarım inmiş. SpeechApp kurulumunu yeniden çalıştırın.", hata);
         }
-        _islemci = _fabrika.CreateBuilder().WithLanguage("tr").Build();
         _gunlukcu.Bilgi($"Whisper modeli yuklendi: {Path.GetFileName(_modelYolu)}, calisma zamani: {RuntimeOptions.LoadedLibrary}, " +
             $"islemci cekirdegi: {Environment.ProcessorCount}.");
     }

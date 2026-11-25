@@ -5,6 +5,8 @@
     <Project Path="src/SpeechApp.WinForms/SpeechApp.WinForms.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SpeechApp.PerformanceTests/SpeechApp.PerformanceTests.csproj" />
+    <Project Path="tests/SpeechApp.SmokeTests/SpeechApp.SmokeTests.csproj" />
     <Project Path="tests/SpeechApp.UnitTests/SpeechApp.UnitTests.csproj" />
   </Folder>
 </Solution>

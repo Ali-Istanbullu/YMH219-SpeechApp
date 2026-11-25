@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Smoke testleri: "uygulama gercekten calisiyor mu?"
+       - DI kayitlari eksiksiz mi, exe acilip kapaniyor mu (her Windows'ta, CI dahil)
+       - Model yoksa anlasilir hata
+       - Gercek uctan uca: Turkce ses (Tolga) ile okut -> Whisper ile geri metne cevir (model + Tolga yoksa atlanir) -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SpeechApp.WinForms\SpeechApp.WinForms.csproj" />
+  </ItemGroup>
+
+</Project>

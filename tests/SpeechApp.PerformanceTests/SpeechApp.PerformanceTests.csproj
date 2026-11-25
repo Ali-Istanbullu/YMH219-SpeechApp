@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Performans testleri. Esikler gelistirici bilgisayarinda olculen degerlere gore; olculen sayilar ciktiya yazilir.
+       CI'da build'i kirmaz (bulut sunucusunun hizi degisken). Whisper testi model + Turkce ses yoksa atlanir. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SpeechApp.Infrastructure\SpeechApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- Model bulma ve TTS ile ornek ses uretme smoke testleriyle ortak (kopya yok). -->
+  <ItemGroup>
+    <Compile Include="..\SpeechApp.SmokeTests\GercekOrtam.cs" Link="Ortak\GercekOrtam.cs" />
+    <Compile Include="..\SpeechApp.SmokeTests\BosGunlukcu.cs" Link="Ortak\BosGunlukcu.cs" />
+  </ItemGroup>
+
+</Project>

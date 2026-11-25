@@ -1,0 +1,37 @@
+# CI: her push ve pull request'te derle + test et (temiz bir Windows sunucusunda).
+# Birim ve smoke testleri basarisizsa build kirmizi olur.
+# Whisper modeli (252 MB) ve Turkce ses (Tolga) GitHub sunucusunda yok: onlari isteyen testler "atlandi" olur;
+# DI, exe acilip kapanma, model yok/bozuk hatalari burada da calisir.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  derle-ve-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Paketleri indir
+        run: dotnet restore
+
+      - name: Derle
+        run: dotnet build --no-restore -c Release
+
+      - name: Birim testleri
+        run: dotnet test tests/SpeechApp.UnitTests --no-build -c Release
+
+      - name: Smoke testleri (DI, exe acilip kapaniyor mu, model hatalari)
+        run: dotnet test tests/SpeechApp.SmokeTests --no-build -c Release --logger "console;verbosity=detailed"
+
+      # Bulut sunucusunun hizi degisken: performans testi kirmizi olsa da build kirilmaz, sonuc ciktida gorunur.
+      - name: Performans testleri
+        continue-on-error: true
+        run: dotnet test tests/SpeechApp.PerformanceTests --no-build -c Release --logger "console;verbosity=detailed"

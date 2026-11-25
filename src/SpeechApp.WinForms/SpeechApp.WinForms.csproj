@@ -9,6 +9,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>..\..\assets\speechapp.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

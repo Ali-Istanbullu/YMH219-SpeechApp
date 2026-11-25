@@ -149,7 +149,7 @@ public sealed class AnaForm : Form
     private static Label Etiket(string metin) => new() { Text = metin, AutoSize = true, Margin = new Padding(3, 8, 3, 3) };
 
     private static Label DurumEtiketi() =>
-        new() { AutoSize = true, Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), Margin = new Padding(3, 6, 3, 6) };
+        new() { AutoSize = true, MaximumSize = new Size(540, 0), Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), Margin = new Padding(3, 6, 3, 6) };
 
     private static Button Buton(string metin, int genislik = 100) => new() { Text = metin, Width = genislik, Height = 32 };
 
@@ -168,10 +168,10 @@ public sealed class AnaForm : Form
         }
         catch (SeslendirmeHatasi hata)
         {
+            // Acilista mesaj kutusu acilmaz: ne yapilacagi durum yazisinda kalici olarak gorunur.
             _gunlukcu.Uyari("Turkce ses yok.");
-            _okumaDurumu.Text = "● Türkçe ses yok";
+            _okumaDurumu.Text = "● " + hata.Message;
             _okumaDurumu.ForeColor = Kirmizi;
-            HataGoster(hata.Message);
         }
 
         IReadOnlyList<string> mikrofonlar = _tanima.Mikrofonlar();

@@ -1,0 +1,44 @@
+# CD: "v" ile baslayan bir etiket (ornek v1.0.0) gonderilince:
+# test et -> yayinla -> Inno Setup ile kurulum exe'si -> GitHub Release'e yukle (SpeechApp-Kurulum-*.exe).
+# Model kuruluma gomulmez; kullanicinin bilgisayarinda kurulum sirasinda indirilir.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write   # Release olusturup dosya yukleyebilmek icin
+
+jobs:
+  kurulumu-yayinla:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Birim testleri
+        run: dotnet test tests/SpeechApp.UnitTests -c Release
+
+      - name: Yayinla
+        run: dotnet publish src/SpeechApp.WinForms -c Release -r win-x64 --self-contained false -o publish/SpeechApp
+
+      # Inno Setup yeni Windows sunucu imajlarinda hazir gelmiyor; her seferinde kurulur.
+      - name: Inno Setup kur
+        run: choco install innosetup --no-progress -y
+
+      - name: Kurulum exe'sini derle
+        shell: pwsh
+        run: |
+          $iscc = Get-ChildItem "C:\Program Files*\Inno Setup*\ISCC.exe" | Select-Object -First 1
+          if (-not $iscc) { throw "ISCC.exe bulunamadi" }
+          & $iscc.FullName installer\SpeechApp.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup derlemesi basarisiz" }
+
+      - name: GitHub Release'e yukle
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/Output/*.exe
