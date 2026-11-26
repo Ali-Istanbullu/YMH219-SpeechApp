@@ -2,6 +2,8 @@
 # Birim ve smoke testleri basarisizsa build kirmizi olur.
 # Whisper modeli (252 MB) ve Turkce ses (Tolga) GitHub sunucusunda yok: onlari isteyen testler "atlandi" olur;
 # DI, exe acilip kapanma, model yok/bozuk hatalari burada da calisir.
+# Tek is (job): derleme bir kez yapilir. Derleme basariliysa test adimlarinin HEPSI calisir; biri kirmizi olsa da
+# digerleri calisir ve sonuclari gorunur (job sonunda yine kirmizi olur).
 name: CI
 
 on:
@@ -23,15 +25,19 @@ jobs:
         run: dotnet restore
 
       - name: Derle
+        id: derle
         run: dotnet build --no-restore -c Release
 
       - name: Birim testleri
+        if: ${{ !cancelled() && steps.derle.outcome == 'success' }}
         run: dotnet test tests/SpeechApp.UnitTests --no-build -c Release
 
       - name: Smoke testleri (DI, exe acilip kapaniyor mu, model hatalari)
+        if: ${{ !cancelled() && steps.derle.outcome == 'success' }}
         run: dotnet test tests/SpeechApp.SmokeTests --no-build -c Release --logger "console;verbosity=detailed"
 
       # Bulut sunucusunun hizi degisken: performans testi kirmizi olsa da build kirilmaz, sonuc ciktida gorunur.
       - name: Performans testleri
+        if: ${{ !cancelled() && steps.derle.outcome == 'success' }}
         continue-on-error: true
         run: dotnet test tests/SpeechApp.PerformanceTests --no-build -c Release --logger "console;verbosity=detailed"
