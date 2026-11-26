@@ -23,6 +23,10 @@ jobs:
       - name: Birim testleri
         run: dotnet test tests/SpeechApp.UnitTests -c Release
 
+      # Exe acilip kapaniyor mu, DI tam mi: kontrol edilmeden kurulum yayinlanmaz.
+      - name: Smoke testleri
+        run: dotnet test tests/SpeechApp.SmokeTests -c Release --logger "console;verbosity=detailed"
+
       - name: Yayinla
         run: dotnet publish src/SpeechApp.WinForms -c Release -r win-x64 --self-contained false -o publish/SpeechApp
 
